@@ -29,6 +29,29 @@ export function AuthProvider({ children }) {
     }
     const t = localStorage.getItem("cb_token");
     if (!t) {
+      // Facebook OAuth returns ?code=&state= on the redirect URL
+      const search = window.location.search || "";
+      if (search.includes("code=")) {
+        const params = new URLSearchParams(search);
+        const code = params.get("code");
+        const state = params.get("state");
+        const saved = localStorage.getItem("fb_oauth_state");
+        if (code && state && state === saved) {
+          localStorage.removeItem("fb_oauth_state");
+          api
+            .post("/auth/facebook", { code, redirect_uri: window.location.origin + "/app" })
+            .then((r) => {
+              localStorage.setItem("cb_token", r.data.token);
+              setUser(r.data.user);
+            })
+            .catch(() => {})
+            .finally(() => {
+              window.history.replaceState(null, "", window.location.pathname);
+              setLoading(false);
+            });
+          return;
+        }
+      }
       setLoading(false);
       return;
     }

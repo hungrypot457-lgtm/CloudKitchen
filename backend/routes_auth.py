@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import datetime, timezone, timedelta
+import os
 import httpx
 from db import db
-from models import RegisterReq, LoginReq, ProfileReq
+from models import RegisterReq, LoginReq, ProfileReq, FacebookAuthReq
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from utils import serialize, now_iso, audit
 from bson import ObjectId
@@ -10,6 +11,7 @@ from bson import ObjectId
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMERGENT_SESSION_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+FB_GRAPH = "https://graph.facebook.com/v19.0"
 
 MAX_ATTEMPTS = 5
 LOCK_MINUTES = 15
@@ -79,6 +81,62 @@ async def login(body: LoginReq, request: Request):
 @router.get("/me")
 async def me(user: dict = Depends(get_current_user)):
     return {"user": user}
+
+
+@router.get("/config")
+async def auth_config():
+    app_id = os.environ.get("FACEBOOK_APP_ID", "")
+    app_secret = os.environ.get("FACEBOOK_APP_SECRET", "")
+    return {"facebook_enabled": bool(app_id and app_secret), "facebook_app_id": app_id}
+
+
+async def _social_login(email, name, picture, provider):
+    """Find or create a customer from a verified social identity, return {token, user}."""
+    email = (email or "").lower()
+    if not email:
+        raise HTTPException(status_code=401, detail="Sign-in failed. Please try again.")
+    user = await db.users.find_one({"email": email})
+    if not user:
+        doc = {
+            "name": name or email.split("@")[0], "email": email, "phone": "",
+            "password_hash": "", "role": "customer", "status": "active",
+            "profile_photo": picture or "", "auth_provider": provider, "created_at": now_iso(),
+        }
+        res = await db.users.insert_one(doc)
+        doc["id"] = str(res.inserted_id)
+        return {"token": create_access_token(doc["id"], "customer"), "user": serialize(doc)}
+    uid = str(user["_id"])
+    if not user.get("profile_photo") and picture:
+        await db.users.update_one({"_id": user["_id"]}, {"$set": {"profile_photo": picture}})
+    return {"token": create_access_token(uid, user["role"]), "user": serialize(user)}
+
+
+@router.post("/facebook")
+async def facebook_auth(body: FacebookAuthReq):
+    app_id = os.environ.get("FACEBOOK_APP_ID", "")
+    app_secret = os.environ.get("FACEBOOK_APP_SECRET", "")
+    if not app_id or not app_secret:
+        raise HTTPException(status_code=400, detail="Facebook login is not configured yet.")
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            tok = await client.get(f"{FB_GRAPH}/oauth/access_token", params={
+                "client_id": app_id, "client_secret": app_secret,
+                "redirect_uri": body.redirect_uri, "code": body.code,
+            })
+            if tok.status_code != 200:
+                raise HTTPException(status_code=401, detail="Facebook sign-in failed. Please try again.")
+            access_token = tok.json().get("access_token")
+            me_resp = await client.get(f"{FB_GRAPH}/me", params={
+                "fields": "id,name,email,picture", "access_token": access_token,
+            })
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=502, detail="Facebook sign-in is unavailable. Please try again.")
+    data = me_resp.json()
+    email = data.get("email") or f"fb_{data.get('id')}@facebook.local"
+    picture = (data.get("picture") or {}).get("data", {}).get("url", "")
+    return await _social_login(email, data.get("name"), picture, "facebook")
 
 
 @router.post("/google")

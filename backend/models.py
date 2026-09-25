@@ -15,6 +15,11 @@ class LoginReq(BaseModel):
     password: str
 
 
+class FacebookAuthReq(BaseModel):
+    code: str
+    redirect_uri: str
+
+
 # ---- Categories ----
 class CategoryReq(BaseModel):
     name: str = Field(min_length=1, max_length=60)

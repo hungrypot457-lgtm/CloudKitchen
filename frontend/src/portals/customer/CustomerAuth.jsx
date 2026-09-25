@@ -14,6 +14,11 @@ export default function CustomerAuth() {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [busy, setBusy] = useState(false);
+  const [fb, setFb] = useState({ enabled: false, appId: "" });
+
+  useEffect(() => {
+    api.get("/auth/config").then((r) => setFb({ enabled: r.data.facebook_enabled, appId: r.data.facebook_app_id })).catch(() => {});
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -33,6 +38,16 @@ export default function CustomerAuth() {
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     const redirectUrl = window.location.origin + "/app";
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+  };
+
+  const facebookLogin = () => {
+    if (!fb.enabled) { toast.info("Facebook login isn't configured yet."); return; }
+    const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("fb_oauth_state", state);
+    const redirectUrl = window.location.origin + "/app";
+    window.location.href =
+      `https://www.facebook.com/v19.0/dialog/oauth?client_id=${fb.appId}` +
+      `&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${state}&scope=email,public_profile`;
   };
 
   return (
@@ -73,7 +88,7 @@ export default function CustomerAuth() {
           <p className="text-center text-xs text-slate-400">or continue with</p>
           <div className="grid grid-cols-2 gap-3">
             <Button variant="outline" type="button" data-testid="google-login" onClick={googleLogin}>Google</Button>
-            <Button variant="outline" type="button" data-testid="facebook-login" onClick={() => toast.info("Facebook login coming soon")}>Facebook</Button>
+            <Button variant="outline" type="button" data-testid="facebook-login" onClick={facebookLogin}>Facebook</Button>
           </div>
         </div>
 
