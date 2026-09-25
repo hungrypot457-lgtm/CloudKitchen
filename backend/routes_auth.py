@@ -1,17 +1,20 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import datetime, timezone, timedelta
 import os
+import secrets
+import logging
 import httpx
 from db import db
-from models import RegisterReq, LoginReq, ProfileReq, FacebookAuthReq
+from models import (RegisterReq, LoginReq, ProfileReq, ChangePasswordReq,
+                    ForgotPasswordReq, ResetPasswordReq)
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from utils import serialize, now_iso, audit
 from bson import ObjectId
 
+logger = logging.getLogger("cloudbite.auth")
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMERGENT_SESSION_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
-FB_GRAPH = "https://graph.facebook.com/v19.0"
 
 MAX_ATTEMPTS = 5
 LOCK_MINUTES = 15
@@ -83,13 +86,6 @@ async def me(user: dict = Depends(get_current_user)):
     return {"user": user}
 
 
-@router.get("/config")
-async def auth_config():
-    app_id = os.environ.get("FACEBOOK_APP_ID", "")
-    app_secret = os.environ.get("FACEBOOK_APP_SECRET", "")
-    return {"facebook_enabled": bool(app_id and app_secret), "facebook_app_id": app_id}
-
-
 async def _social_login(email, name, picture, provider):
     """Find or create a customer from a verified social identity, return {token, user}."""
     email = (email or "").lower()
@@ -109,34 +105,6 @@ async def _social_login(email, name, picture, provider):
     if not user.get("profile_photo") and picture:
         await db.users.update_one({"_id": user["_id"]}, {"$set": {"profile_photo": picture}})
     return {"token": create_access_token(uid, user["role"]), "user": serialize(user)}
-
-
-@router.post("/facebook")
-async def facebook_auth(body: FacebookAuthReq):
-    app_id = os.environ.get("FACEBOOK_APP_ID", "")
-    app_secret = os.environ.get("FACEBOOK_APP_SECRET", "")
-    if not app_id or not app_secret:
-        raise HTTPException(status_code=400, detail="Facebook login is not configured yet.")
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            tok = await client.get(f"{FB_GRAPH}/oauth/access_token", params={
-                "client_id": app_id, "client_secret": app_secret,
-                "redirect_uri": body.redirect_uri, "code": body.code,
-            })
-            if tok.status_code != 200:
-                raise HTTPException(status_code=401, detail="Facebook sign-in failed. Please try again.")
-            access_token = tok.json().get("access_token")
-            me_resp = await client.get(f"{FB_GRAPH}/me", params={
-                "fields": "id,name,email,picture", "access_token": access_token,
-            })
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(status_code=502, detail="Facebook sign-in is unavailable. Please try again.")
-    data = me_resp.json()
-    email = data.get("email") or f"fb_{data.get('id')}@facebook.local"
-    picture = (data.get("picture") or {}).get("data", {}).get("url", "")
-    return await _social_login(email, data.get("name"), picture, "facebook")
 
 
 @router.post("/google")
@@ -194,3 +162,46 @@ async def update_profile(body: ProfileReq, user: dict = Depends(get_current_user
         await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": updates})
     fresh = await db.users.find_one({"_id": ObjectId(user["id"])})
     return {"user": serialize(fresh)}
+
+
+@router.post("/change-password")
+async def change_password(body: ChangePasswordReq, user: dict = Depends(get_current_user)):
+    doc = await db.users.find_one({"_id": ObjectId(user["id"])})
+    if doc.get("password_hash") and not verify_password(body.old_password, doc["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect.")
+    await db.users.update_one({"_id": doc["_id"]}, {"$set": {"password_hash": hash_password(body.new_password)}})
+    await audit(user, "password_change", "user", user["id"])
+    return {"message": "Password changed successfully."}
+
+
+@router.post("/forgot-password")
+async def forgot_password(body: ForgotPasswordReq):
+    email = body.email.lower()
+    user = await db.users.find_one({"email": email})
+    if user:
+        token = secrets.token_urlsafe(32)
+        await db.password_reset_tokens.insert_one({
+            "token": token, "user_id": str(user["_id"]), "email": email,
+            "expires_at": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
+            "used": False, "created_at": now_iso(),
+        })
+        logger.info(f"[password-reset] reset link for {email}: /reset-password?token={token}")
+    return {"message": "If an account exists for that email, a password reset link has been generated."}
+
+
+@router.post("/reset-password")
+async def reset_password(body: ResetPasswordReq):
+    rec = await db.password_reset_tokens.find_one({"token": body.token})
+    if not rec or rec.get("used"):
+        raise HTTPException(status_code=400, detail="This reset link is invalid or has already been used.")
+    exp = rec["expires_at"]
+    if isinstance(exp, str):
+        exp = datetime.fromisoformat(exp)
+    if exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+    if exp < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="This reset link has expired.")
+    await db.users.update_one({"_id": ObjectId(rec["user_id"])},
+                              {"$set": {"password_hash": hash_password(body.new_password)}})
+    await db.password_reset_tokens.update_one({"_id": rec["_id"]}, {"$set": {"used": True}})
+    return {"message": "Password reset successful. Please log in."}

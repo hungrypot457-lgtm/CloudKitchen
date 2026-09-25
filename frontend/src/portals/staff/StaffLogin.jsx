@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ChefHat, Loader2, ArrowLeft } from "lucide-react";
+import { ChefHat, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { errMsg } from "@/lib/api";
+import { ForgotPasswordLink } from "@/components/AuthExtras";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function StaffLogin() {
   const { login } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -77,10 +76,8 @@ export default function StaffLogin() {
             </Button>
           </form>
 
-          <div className="mt-6 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-500">
-            <p className="font-semibold text-slate-700">Demo logins</p>
-            <p className="mt-1">Admin: hungrypot457@gmail.com / Admin@12345</p>
-            <p>Manager: manager@cloudbite.com / Manager@123</p>
+          <div className="mt-4 text-center">
+            <ForgotPasswordLink />
           </div>
         </div>
       </div>

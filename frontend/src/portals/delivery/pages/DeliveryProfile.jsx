@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { LogOut, Mail, Phone, Bike, Hash } from "lucide-react";
+import { LogOut, Mail, Phone, Bike, Hash, KeyRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { ChangePasswordDialog } from "@/components/AuthExtras";
 import { Button } from "@/components/ui/button";
 
 export default function DeliveryProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [pwOpen, setPwOpen] = useState(false);
   const doLogout = () => { logout(); navigate("/"); toast.success("Logged out"); };
 
   return (
@@ -21,10 +24,14 @@ export default function DeliveryProfile() {
         <Info icon={Phone} label="Phone" value={user.phone} />
         <Info icon={Bike} label="Vehicle" value={`${user.vehicle_type || "—"}`} />
         <Info icon={Hash} label="Vehicle number" value={user.vehicle_number || "—"} />
+        <Button variant="outline" className="w-full" onClick={() => setPwOpen(true)} data-testid="rider-change-password">
+          <KeyRound className="mr-2 h-4 w-4" /> Change Password
+        </Button>
         <Button variant="outline" className="w-full text-red-600" onClick={doLogout} data-testid="rider-logout">
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
       </div>
+      <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
     </div>
   );
 }

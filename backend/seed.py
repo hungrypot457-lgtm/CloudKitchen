@@ -24,6 +24,14 @@ async def create_indexes():
     await db.delivery_assignments.create_index("delivery_partner_id")
     await db.delivery_assignments.create_index("order_id")
     await db.audit_logs.create_index("timestamp")
+    await db.password_reset_tokens.create_index("token")
+
+
+async def remove_demo_accounts():
+    # Per spec: no demo Manager/Customer/Delivery accounts must exist.
+    await db.users.delete_many({
+        "email": {"$in": ["manager@cloudbite.com", "rider@cloudbite.com", "customer@cloudbite.com"]}
+    })
 
 
 async def seed_admin():
@@ -53,27 +61,7 @@ async def seed_demo():
         "delivery_radius_km": 5.0, "tax_percent": 0.0,
     }}, upsert=True)
 
-    # Demo staff & customers
-    demo_users = [
-        {"name": "Kitchen Manager", "email": "manager@cloudbite.com", "phone": "9000000001",
-         "role": "manager", "status": "active", "profile_photo": "",
-         "permissions": ["view_dashboard", "view_orders", "update_orders", "view_customers",
-                         "manage_availability", "view_deliveries", "manage_deliveries", "view_notifications"],
-         "notes": "Handles kitchen fulfilment", "password_hash": hash_password("Manager@123"),
-         "created_at": now_iso()},
-        {"name": "Ravi Kumar", "email": "rider@cloudbite.com", "phone": "9000000002",
-         "role": "delivery_partner", "status": "active", "profile_photo": "",
-         "vehicle_type": "Bike", "vehicle_number": "MH01AB1234", "emergency_contact": "9000000009",
-         "joining_date": "2024-06-01", "notes": "", "password_hash": hash_password("Rider@123"),
-         "created_at": now_iso()},
-        {"name": "Aditi Sharma", "email": "customer@cloudbite.com", "phone": "9000000003",
-         "role": "customer", "status": "active", "profile_photo": "",
-         "password_hash": hash_password("Customer@123"), "created_at": now_iso()},
-    ]
-    for u in demo_users:
-        if not await db.users.find_one({"email": u["email"]}):
-            await db.users.insert_one(u)
-
+    # Demo business data only — NO demo user accounts are seeded.
     # Categories
     cats = [
         {"name": "Biryani & Rice", "sort_order": 1, "enabled": True},
@@ -135,5 +123,6 @@ async def seed_demo():
 
 async def run_seed():
     await create_indexes()
+    await remove_demo_accounts()
     await seed_admin()
     await seed_demo()

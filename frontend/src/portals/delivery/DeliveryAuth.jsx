@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Bike, Loader2, ArrowLeft } from "lucide-react";
+import { Bike, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { errMsg } from "@/lib/api";
+import { ForgotPasswordLink } from "@/components/AuthExtras";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function DeliveryAuth() {
   const { login } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,7 +41,7 @@ export default function DeliveryAuth() {
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign In
           </Button>
         </form>
-        <p className="mt-6 rounded-lg bg-slate-50 p-3 text-center text-xs text-slate-500">Demo: rider@cloudbite.com / Rider@123</p>
+        <div className="mt-4 text-center"><ForgotPasswordLink /></div>
       </div>
     </div>
   );

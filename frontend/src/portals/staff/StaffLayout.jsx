@@ -3,9 +3,10 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   ChefHat, LayoutDashboard, ShoppingBag, UtensilsCrossed, Tags, Users, Bike, UserCog,
   Truck, MapPin, BarChart3, Bell, Settings as SettingsIcon, ScrollText, Menu as MenuIcon,
-  LogOut, X,
+  LogOut, X, KeyRound,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { ChangePasswordDialog } from "@/components/AuthExtras";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
@@ -56,6 +57,7 @@ export default function StaffLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
 
   const seg = location.pathname.replace("/console", "").replace("/", "") || "dashboard";
   const title = (NAV.find((n) => n.to === seg)?.label) || "Dashboard";
@@ -87,6 +89,10 @@ export default function StaffLayout({ children }) {
         </div>
         <div className="border-t border-white/10 p-3">
           <div className="mb-2 px-2 text-xs text-slate-400">{user.email}</div>
+          <Button variant="ghost" onClick={() => setPwOpen(true)} data-testid="staff-change-password"
+            className="w-full justify-start text-slate-300 hover:bg-white/10 hover:text-white">
+            <KeyRound className="mr-2 h-4 w-4" /> Change Password
+          </Button>
           <Button variant="ghost" onClick={doLogout} data-testid="staff-logout"
             className="w-full justify-start text-slate-300 hover:bg-white/10 hover:text-white">
             <LogOut className="mr-2 h-4 w-4" /> Logout
@@ -103,6 +109,10 @@ export default function StaffLayout({ children }) {
           </div>
           <div className="py-2"><NavItems onNavigate={() => setOpen(false)} /></div>
           <div className="border-t border-white/10 p-3">
+            <Button variant="ghost" onClick={() => { setPwOpen(true); setOpen(false); }}
+              className="w-full justify-start text-slate-300 hover:bg-white/10 hover:text-white">
+              <KeyRound className="mr-2 h-4 w-4" /> Change Password
+            </Button>
             <Button variant="ghost" onClick={doLogout}
               className="w-full justify-start text-slate-300 hover:bg-white/10 hover:text-white">
               <LogOut className="mr-2 h-4 w-4" /> Logout
@@ -130,6 +140,7 @@ export default function StaffLayout({ children }) {
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
+      <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
     </div>
   );
 }
