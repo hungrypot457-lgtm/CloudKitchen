@@ -1,0 +1,146 @@
+{
+  "project_name": "Cloud Kitchen Food Ordering & Delivery Management System",
+  "design_archetype": "Organic Warmth meets Swiss Precision (Culinary High-Contrast)",
+  "theme_mode": "Light mode default with dark slate navigation bars and warm high-contrast food accents",
+  "typography": {
+    "font_family_heading": "Plus Jakarta Sans, Outfit, sans-serif",
+    "font_family_body": "Inter, system-ui, sans-serif",
+    "font_family_mono": "JetBrains Mono, monospace",
+    "font_rules": "DO NOT use Inter for main headings. Use Plus Jakarta Sans or Outfit for bold personality. Use tight tracking (tracking-tight) for headings above 24px. Labels must be uppercase with tracking-[0.15em]."
+  },
+  "text_size_hierarchy": {
+    "h1_hero": "text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight",
+    "h2_section": "text-2xl sm:text-3xl font-bold tracking-tight",
+    "h3_subsection": "text-xl sm:text-2xl font-semibold",
+    "h4_card": "text-lg font-semibold",
+    "body": "text-sm sm:text-base leading-relaxed",
+    "small_accent": "text-xs font-medium uppercase tracking-wider"
+  },
+  "colors": {
+    "primary": {
+      "default": "#EA580C",
+      "hover": "#C2410C",
+      "foreground": "#FFFFFF",
+      "description": "Warm Saffron Amber / Flame Orange for main CTAs and food ordering action buttons"
+    },
+    "secondary": {
+      "default": "#0F172A",
+      "hover": "#1E293B",
+      "foreground": "#F8FAFC",
+      "description": "Deep Slate Navy for sidebars, primary navigation, and headers"
+    },
+    "accent": {
+      "default": "#FFF7ED",
+      "foreground": "#C2410C",
+      "description": "Soft peach tint for active tab highlights and pill selections"
+    },
+    "veg_green": {
+      "default": "#16A34A",
+      "light": "#DCFCE7",
+      "border": "#22C55E",
+      "description": "Indian standard Vegetarian icon badge (Green square with green dot)"
+    },
+    "non_veg_red": {
+      "default": "#DC2626",
+      "light": "#FEE2E2",
+      "border": "#EF4444",
+      "description": "Indian standard Non-Vegetarian icon badge (Red square with red dot)"
+    },
+    "status": {
+      "prepared": "#D97706",
+      "on_the_way": "#2563EB",
+      "arrived": "#059669",
+      "cancelled": "#9CA3AF"
+    },
+    "background": {
+      "app": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "dark_surface": "#0F172A",
+      "card": "#FFFFFF"
+    },
+    "border": "#E2E8F0"
+  },
+  "ui_patterns_by_role": {
+    "admin_dashboard": {
+      "layout": "Desktop-optimized sidebar + top header navigation with drawer collapse for tablet/mobile",
+      "density": "High density grid (MODE B) with stats cards, revenue charts, live order queue, and quick availability toggles",
+      "modules": ["Dashboard", "Orders", "Menu", "Categories", "Customers", "Delivery Partners", "Managers", "Deliveries", "Live Tracking", "Inventory/Availability", "Reports", "Notifications", "Settings", "Audit Logs"]
+    },
+    "manager_dashboard": {
+      "layout": "Restricted permission responsive admin view focusing on kitchen fulfillment, menu toggles, and delivery assignments",
+      "density": "Medium-high density KDS (Kitchen Display System) queue layout"
+    },
+    "customer_mobile_app": {
+      "layout": "Mobile-first view with sticky category filter header, food cards, sticky bottom cart bar, sheet drawer for cart/checkout, and map-based tracking view",
+      "key_rules": [
+        "Unavailable items MUST remain visible in the menu but styled with reduced opacity (opacity-60), a prominent 'Currently Unavailable' badge, and a disabled Add-to-Cart button",
+        "Order status stage shown to customer MUST strictly use 3 stages: 'ORDER BEING PREPARED', 'ORDER ON THE WAY', 'ORDER ARRIVED'",
+        "Address system relies ONLY on GPS coordinates / OpenStreetMap pin selection (no manual street text standard address fields required)",
+        "Delivery Fee = ₹0, Platform Fee = ₹0, Convenience Fee = ₹0. Total = Item Total only",
+        "Payment mode = Cash on Delivery (COD) only",
+        "Delivery radius limit = 5km maximum from kitchen GPS location with instant validation"
+      ]
+    },
+    "delivery_partner_mobile_app": {
+      "layout": "Mobile-first interface with Active Delivery view, Kitchen to Customer Leaflet route map, action workflow buttons (Accept -> Pickup -> Start Delivery -> Delivered), and Earnings/History tab",
+      "key_rules": [
+        "High-contrast large touch targets (min 48px height) for quick action while on motorcycle/scooter",
+        "One-tap map navigation launcher and delivery status stepper"
+      ]
+    }
+  },
+  "leaflet_map_guidelines": {
+    "provider": "Leaflet with OpenStreetMap tiles",
+    "custom_markers": {
+      "kitchen_pin": "Custom Amber/Red Chef/Kitchen icon pin",
+      "customer_pin": "Custom Blue/Green Home/Map pin",
+      "delivery_partner_pin": "Custom Bike/Courier icon pin"
+    },
+    "map_container_height": "Mobile tracking: min 300px height or flex-1 full screen. Admin live map: min 500px height",
+    "radius_circle": "Render a transparent red/amber 5km radius circle around the central kitchen location"
+  },
+  "component_guidelines": {
+    "buttons": "Pill or rounded-lg with explicit hover states, transition-colors duration-150. Always use explicit text color on hover.",
+    "cards": "Subtle border (border-slate-200), shadow-sm, hover:shadow-md transition-shadow. No extreme gradients.",
+    "veg_non_veg_badge": "Square 16x16px with rounded-sm border 1.5px (green or red) containing a centered solid dot 8x8px (green or red).",
+    "unavailable_card_style": "opacity-60 grayscale-[30%] pointer-events-auto filter",
+    "sticky_cart_bar": "Fixed bottom-4 left-4 right-4 bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between shadow-xl z-40"
+  },
+  "image_urls": {
+    "food_items": [
+      {
+        "url": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBmb29kJTIwZGlzaCUyMGdvdXJtZXQlMjBjdXJyeSUyMGJpcnlhbmklMjBidXJnZXIlMjBwaXp6YXxlbnwwfHx8fDE3OTAzNTI3MDF8MA&ixlib=rb-4.1.0&q=85",
+        "category": "curry_biryani",
+        "description": "Gourmet Indian Curry & Rice Spread"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1513185158878-8d8c2a2a3da3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjBmb29kJTIwZGlzaCUyMGdvdXJtZXQlMjBjdXJyeSUyMGJpcnlhbmklMjBidXJnZXIlMjBwaXp6YXxlbnwwfHx8fDE3OTAzNTI3MDF8MA&ixlib=rb-4.1.0&q=85",
+        "category": "burger",
+        "description": "Artisanal Loaded Gourmet Burger"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1662186342592-5b1236e95a4e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwzfHxpbmRpYW4lMjBmb29kJTIwZGlzaCUyMGdvdXJtZXQlMjBjdXJyeSUyMGJpcnlhbmklMjBidXJnZXIlMjBwaXp6YXxlbnwwfHx8fDE3OTAzNTI3MDF8MA&ixlib=rb-4.1.0&q=85",
+        "category": "pizza",
+        "description": "Woodfired Pizza with Fresh Toppings"
+      }
+    ],
+    "avatars": [
+      {
+        "url": "https://images.unsplash.com/photo-1656952945433-6cc98812d2a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxkZWxpdmVyeSUyMGNvdXJpZXIlMjBwZXJzb24lMjBjaGVmJTIwYXZhdGFyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzkwMzUyNzAxfDA&ixlib=rb-4.1.0&q=85",
+        "category": "delivery_partner",
+        "description": "Delivery courier rider in helmet with delivery bag"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1659353741505-ef9d8bca2403?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwzfHxkZWxpdmVyeSUyMGNvdXJpZXIlMjBwZXJzb24lMjBjaGVmJTIwYXZhdGFyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzkwMzUyNzAxfDA&ixlib=rb-4.1.0&q=85",
+        "category": "kitchen_manager",
+        "description": "Kitchen manager / chef avatar"
+      }
+    ]
+  },
+  "general_ui_ux_guidelines": {
+    "test_ids": "All interactive elements, buttons, inputs, tabs, modal triggers, status badges, and cart items MUST include data-testid attribute in kebab-case (e.g. data-testid='menu-add-to-cart-button', data-testid='checkout-place-order-button', data-testid='order-status-badge').",
+    "accessibility": "Ensure high-contrast colors (min 4.5:1 ratio for normal text). Do not rely on color alone for critical status; always pair colors with text labels and icons.",
+    "responsiveness": "Admin/Manager views MUST work smoothly from desktop (1280px+) down to tablet (768px) and mobile drawers. Customer & Delivery Partner views are mobile-first (max-w-md mx-auto centered frame on desktop).",
+    "toast_notifications": "Use sonner for notifications (order updates, stock toggles, delivery assignments)."
+  }
+}

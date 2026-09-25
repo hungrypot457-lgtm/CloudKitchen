@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #f8fafc;
+}
+
+.font-display {
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 222 47% 11%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222 47% 11%;
+        --primary: 21 90% 48%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 222 47% 11%;
+        --secondary-foreground: 210 40% 98%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215 16% 47%;
+        --accent: 24 100% 96%;
+        --accent-foreground: 21 90% 40%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 214 32% 91%;
+        --input: 214 32% 91%;
+        --ring: 21 90% 48%;
+        --chart-1: 21 90% 48%;
+        --chart-2: 217 91% 60%;
+        --chart-3: 142 71% 45%;
+        --chart-4: 43 96% 56%;
+        --chart-5: 280 65% 60%;
+        --radius: 0.75rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    h1, h2, h3, h4 {
+        font-family: "Plus Jakarta Sans", sans-serif;
+    }
+}
+
+/* Leaflet sizing */
+.leaflet-container {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    border-radius: 0.75rem;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes cb-fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.cb-fade-in { animation: cb-fade-in 0.3s ease-out both; }
