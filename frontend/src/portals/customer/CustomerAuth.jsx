@@ -32,9 +32,6 @@ export default function CustomerAuth() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
       <div className="relative flex flex-col justify-end bg-secondary px-6 pb-8 pt-12 text-white" style={{ minHeight: 260 }}>
-        <button onClick={() => navigate("/")} className="absolute left-5 top-5 inline-flex items-center gap-1 text-sm text-slate-300" data-testid="customer-back">
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary">
           <ShoppingBag className="h-6 w-6" />
         </div>

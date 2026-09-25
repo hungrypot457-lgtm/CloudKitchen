@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Loader } from "@/components/common";
 import StaffLogin from "./StaffLogin";
@@ -20,6 +20,8 @@ import AuditLogs from "./pages/AuditLogs";
 export default function StaffApp() {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen bg-slate-50"><Loader label="Loading console..." /></div>;
+  if (user?.role === "customer") return <Navigate to="/app" replace />;
+  if (user?.role === "delivery_partner") return <Navigate to="/rider" replace />;
   if (!user || !["admin", "manager"].includes(user.role)) return <StaffLogin />;
 
   return (

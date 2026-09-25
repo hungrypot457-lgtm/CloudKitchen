@@ -52,13 +52,6 @@ export default function StaffLogin() {
 
       <div className="flex w-full flex-col items-center justify-center bg-slate-50 p-6 lg:w-1/2">
         <div className="w-full max-w-sm cb-fade-in">
-          <button
-            onClick={() => navigate("/")}
-            className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
-            data-testid="staff-back-home"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </button>
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
               <ChefHat className="h-5 w-5 text-white" />

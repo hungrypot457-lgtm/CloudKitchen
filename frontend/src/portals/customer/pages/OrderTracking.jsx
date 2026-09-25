@@ -6,9 +6,9 @@ import { Loader } from "@/components/common";
 import { LeafletMap } from "@/components/LeafletMap";
 
 const STAGES = [
-  { key: "ORDER BEING PREPARED", label: "Order Being Prepared", icon: ChefHat },
-  { key: "ORDER ON THE WAY", label: "Order On The Way", icon: Bike },
-  { key: "ORDER ARRIVED", label: "Order Arrived", icon: PackageCheck },
+  { key: "ORDER BEING PREPARED", label: "ORDER BEING PREPARED", icon: ChefHat },
+  { key: "ORDER ON THE WAY", label: "ORDER ON THE WAY", icon: Bike },
+  { key: "ORDER ARRIVED", label: "ORDER ARRIVED", icon: PackageCheck },
 ];
 
 export default function OrderTracking() {

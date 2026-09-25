@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Loader } from "@/components/common";
 import { CartProvider } from "./CartContext";
@@ -16,6 +16,8 @@ import CustomerNotifications from "./pages/CustomerNotifications";
 export default function CustomerApp() {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen bg-slate-100"><Loader /></div>;
+  if (user && ["admin", "manager"].includes(user.role)) return <Navigate to="/console" replace />;
+  if (user?.role === "delivery_partner") return <Navigate to="/rider" replace />;
   if (!user || user.role !== "customer") return <CustomerAuth />;
 
   return (

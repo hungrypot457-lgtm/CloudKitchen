@@ -33,7 +33,7 @@ function NavItems({ onNavigate }) {
       {visible.map((n) => (
         <NavLink
           key={n.to || "home"}
-          to={n.to}
+          to={n.to ? `/console/${n.to}` : "/console"}
           end={n.end}
           onClick={onNavigate}
           data-testid={`nav-${n.to || "dashboard"}`}

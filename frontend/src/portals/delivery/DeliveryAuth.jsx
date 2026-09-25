@@ -28,9 +28,6 @@ export default function DeliveryAuth() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
       <div className="relative flex flex-col justify-end bg-blue-600 px-6 pb-8 pt-12 text-white" style={{ minHeight: 260 }}>
-        <button onClick={() => navigate("/")} className="absolute left-5 top-5 inline-flex items-center gap-1 text-sm text-blue-100" data-testid="delivery-back">
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20"><Bike className="h-6 w-6" /></div>
         <h1 className="font-display text-3xl font-extrabold">Rider Partner</h1>
         <p className="mt-1 text-blue-100">Deliver orders. Track live. Earn more.</p>
