@@ -73,3 +73,56 @@ export function EmptyState({ icon: Icon, title, subtitle }) {
     </div>
   );
 }
+
+export function Skeleton({ className = "" }) {
+  return <div className={`skeleton rounded-lg ${className}`} />;
+}
+
+export function FoodListSkeleton({ count = 5 }) {
+  return (
+    <div className="space-y-3" data-testid="food-skeleton">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3">
+          <Skeleton className="h-24 w-24 rounded-xl" />
+          <div className="flex-1 space-y-2 py-1">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-1/2" />
+            <div className="flex items-center justify-between pt-3">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function StatsSkeleton({ count = 4 }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-testid="stats-skeleton">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5">
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function CardGridSkeleton({ count = 6 }) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="card-skeleton">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-1/2" />
+        </div>
+      ))}
+    </div>
+  );
+}

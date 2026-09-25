@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { api } from "@/lib/api";
-import { EmptyState, Loader } from "@/components/common";
+import { EmptyState, FoodListSkeleton } from "@/components/common";
 import { FoodCard } from "../components/FoodCard";
 import { Input } from "@/components/ui/input";
 
@@ -29,7 +29,7 @@ export default function Search() {
         </div>
       </div>
       <div className="px-4 pb-4">
-        {loading || !items ? <Loader /> : items.length === 0 ? (
+        {loading || !items ? <FoodListSkeleton /> : items.length === 0 ? (
           <EmptyState icon={SearchIcon} title="No dishes found" subtitle="Try a different search term." />
         ) : (
           <div className="space-y-3">{items.map((i) => <FoodCard key={i.id} item={i} />)}</div>

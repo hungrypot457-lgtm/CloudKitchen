@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ShoppingBag, Clock, Truck, CheckCircle2, XCircle, IndianRupee, Users, Bike } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 import { api, rupee } from "@/lib/api";
-import { Loader } from "@/components/common";
+import { StatsSkeleton } from "@/components/common";
 import { useAuth } from "@/context/AuthContext";
 
 function Stat({ icon: Icon, label, value, tint }) {
@@ -25,7 +25,7 @@ export default function Dashboard() {
     api.get("/admin/dashboard").then((r) => setData(r.data)).catch(() => {});
   }, []);
 
-  if (!data) return <Loader />;
+  if (!data) return <div className="space-y-6"><StatsSkeleton count={4} /><StatsSkeleton count={3} /></div>;
 
   const chart = Object.entries(data.by_status || {}).map(([k, v]) => ({ name: k.replace(/_/g, " "), value: v }));
   const colors = ["#94a3b8", "#6366f1", "#f59e0b", "#f97316", "#a855f7", "#06b6d4", "#2563eb", "#10b981", "#94a3b8"];

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Bell, ShoppingBag } from "lucide-react";
+import { MapPin, Bell, ShoppingBag, User } from "lucide-react";
 import { api, rupee } from "@/lib/api";
-import { Loader } from "@/components/common";
+import { FoodListSkeleton } from "@/components/common";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "../CartContext";
 import { FoodCard } from "../components/FoodCard";
@@ -33,9 +33,14 @@ export default function Home() {
             <p className="text-xs uppercase tracking-widest text-slate-400">Delivering from</p>
             <p className="flex items-center gap-1 font-display text-lg font-bold"><MapPin className="h-4 w-4 text-primary" /> {biz || "CloudBite Kitchen"}</p>
           </div>
-          <button onClick={() => navigate("/app/notifications")} data-testid="home-notifications" className="relative rounded-full bg-white/10 p-2">
-            <Bell className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/app/notifications")} data-testid="home-notifications" className="relative rounded-full bg-white/10 p-2">
+              <Bell className="h-5 w-5" />
+            </button>
+            <button onClick={() => navigate("/app/profile")} data-testid="home-profile" className="rounded-full bg-white/10 p-2">
+              <User className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         <p className="mt-4 font-display text-2xl font-extrabold">Hey {user.name?.split(" ")[0]} 👋</p>
         <p className="text-sm text-slate-300">What are you craving today?</p>
@@ -47,7 +52,7 @@ export default function Home() {
         {cats.map((c) => <Chip key={c.id} active={activeCat === c.id} onClick={() => setActiveCat(c.id)} label={c.name} testid={`cat-${c.id}`} />)}
       </div>
 
-      {!items ? <Loader /> : (
+      {!items ? <div className="px-4 py-4"><FoodListSkeleton /></div> : (
         <div className="space-y-4 px-4 py-4">
           {activeCat === "all" && featured.length > 0 && (
             <div>

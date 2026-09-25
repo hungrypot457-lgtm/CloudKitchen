@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Star } from "lucide-react";
 import { api, rupee, errMsg } from "@/lib/api";
-import { Loader, EmptyState, VegBadge } from "@/components/common";
+import { CardGridSkeleton, EmptyState, VegBadge } from "@/components/common";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ export default function MenuMgmt() {
           <Button onClick={openNew} data-testid="menu-add-button"><Plus className="mr-1.5 h-4 w-4" /> Add Item</Button>
         </div>
       )}
-      {!items ? <Loader /> : items.length === 0 ? <EmptyState title="No menu items yet" /> : (
+      {!items ? <CardGridSkeleton /> : items.length === 0 ? <EmptyState title="No menu items yet" /> : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((it) => (
             <div key={it.id} data-testid={`menu-item-${it.id}`}
