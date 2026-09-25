@@ -56,6 +56,8 @@ async def get_current_user(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="Your session has expired. Please log in again.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid authentication token.")
+    if payload.get("type") != "access":
+        raise HTTPException(status_code=401, detail="Invalid authentication token.")
     try:
         user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
     except Exception:

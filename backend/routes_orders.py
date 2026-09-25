@@ -4,7 +4,7 @@ from db import db
 from models import PlaceOrderReq, StatusUpdateReq, LocationCheckReq
 from auth import require_customer, require_permission, get_current_user
 from utils import (serialize, now_iso, haversine_km, get_settings, next_sequence,
-                   customer_status, audit, notify, INTERNAL_STATUSES)
+                   customer_status, audit, notify, INTERNAL_STATUSES, safe_regex)
 
 router = APIRouter(prefix="/api", tags=["orders"])
 
@@ -170,9 +170,10 @@ async def list_orders(status: str | None = None, q: str | None = None,
     if status:
         query["internal_status"] = status
     if q:
+        rx = safe_regex(q)
         query["$or"] = [
-            {"order_number": {"$regex": q, "$options": "i"}},
-            {"customer_name": {"$regex": q, "$options": "i"}},
+            {"order_number": rx},
+            {"customer_name": rx},
         ]
     total = await db.orders.count_documents(query)
     orders = await db.orders.find(query).sort("created_at", -1).skip(skip).limit(min(limit, 100)).to_list(100)

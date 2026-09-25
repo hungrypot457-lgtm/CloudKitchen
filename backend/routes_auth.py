@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import datetime, timezone, timedelta
 import os
 import secrets
+import hashlib
 import logging
 import httpx
 from db import db
@@ -179,19 +180,22 @@ async def forgot_password(body: ForgotPasswordReq):
     email = body.email.lower()
     user = await db.users.find_one({"email": email})
     if user:
-        token = secrets.token_urlsafe(32)
+        raw = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw.encode()).hexdigest()
         await db.password_reset_tokens.insert_one({
-            "token": token, "user_id": str(user["_id"]), "email": email,
+            "token_hash": token_hash, "user_id": str(user["_id"]), "email": email,
             "expires_at": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
             "used": False, "created_at": now_iso(),
         })
-        logger.info(f"[password-reset] reset link for {email}: /reset-password?token={token}")
+        # SECURITY: never log the raw token. It must be delivered out-of-band (email).
+        logger.info(f"[password-reset] reset requested for {email}")
     return {"message": "If an account exists for that email, a password reset link has been generated."}
 
 
 @router.post("/reset-password")
 async def reset_password(body: ResetPasswordReq):
-    rec = await db.password_reset_tokens.find_one({"token": body.token})
+    token_hash = hashlib.sha256(body.token.encode()).hexdigest()
+    rec = await db.password_reset_tokens.find_one({"token_hash": token_hash})
     if not rec or rec.get("used"):
         raise HTTPException(status_code=400, detail="This reset link is invalid or has already been used.")
     exp = rec["expires_at"]

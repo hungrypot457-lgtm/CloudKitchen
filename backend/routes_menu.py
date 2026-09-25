@@ -3,7 +3,7 @@ from bson import ObjectId
 from db import db
 from models import CategoryReq, MenuItemReq, AvailabilityReq
 from auth import require_permission, get_current_user
-from utils import serialize, now_iso, audit
+from utils import serialize, now_iso, audit, safe_regex
 
 router = APIRouter(prefix="/api", tags=["menu"])
 
@@ -32,10 +32,11 @@ async def list_menu(category_id: str | None = None, search: str | None = None,
     if featured is not None:
         q["featured"] = featured
     if search:
+        rx = safe_regex(search)
         q["$or"] = [
-            {"name": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}},
-            {"tags": {"$regex": search, "$options": "i"}},
+            {"name": rx},
+            {"description": rx},
+            {"tags": rx},
         ]
     # NOTE: unavailable items remain visible; we never filter them out.
     items = await db.menu_items.find(q).sort([("featured", -1), ("sort_order", 1)]).to_list(1000)

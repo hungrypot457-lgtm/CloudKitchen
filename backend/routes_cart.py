@@ -87,7 +87,7 @@ async def add_item(body: CartItemReq, user=Depends(require_customer)):
         lkey = line["menu_item_id"] + "|" + ",".join(
             sorted(c["group_name"] + ":" + c["option_name"] for c in line.get("customizations", [])))
         if lkey == key:
-            line["quantity"] += body.quantity
+            line["quantity"] = min(line["quantity"] + body.quantity, 50)
             found = True
             break
     if not found:

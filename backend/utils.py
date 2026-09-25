@@ -1,5 +1,6 @@
 import math
 import os
+import re
 from datetime import datetime, timezone
 from db import db
 
@@ -13,6 +14,11 @@ def serialize(doc):
         doc["id"] = str(doc.pop("_id"))
     doc.pop("password_hash", None)
     return doc
+
+
+def safe_regex(text, max_len=100):
+    """Escaped, length-capped case-insensitive regex to prevent ReDoS / injection."""
+    return {"$regex": re.escape((text or "")[:max_len]), "$options": "i"}
 
 
 def now_iso():

@@ -3,7 +3,7 @@ from bson import ObjectId
 from db import db
 from models import ManagerReq, ManagerUpdateReq, DeliveryPartnerReq, DeliveryPartnerUpdateReq
 from auth import (require_admin, require_permission, hash_password, MANAGER_PERMISSIONS)
-from utils import serialize, now_iso, audit
+from utils import serialize, now_iso, audit, safe_regex
 
 router = APIRouter(prefix="/api/admin", tags=["users"])
 
@@ -25,11 +25,8 @@ async def available_permissions(user=Depends(require_admin)):
 async def list_customers(q: str | None = None, user=Depends(require_permission("view_customers"))):
     query = {"role": "customer"}
     if q:
-        query["$or"] = [
-            {"name": {"$regex": q, "$options": "i"}},
-            {"email": {"$regex": q, "$options": "i"}},
-            {"phone": {"$regex": q, "$options": "i"}},
-        ]
+        rx = safe_regex(q)
+        query["$or"] = [{"name": rx}, {"email": rx}, {"phone": rx}]
     customers = await db.users.find(query).sort("created_at", -1).to_list(500)
     out = []
     for c in customers:

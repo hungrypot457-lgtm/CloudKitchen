@@ -47,7 +47,13 @@ async def list_notifications(user=Depends(get_current_user)):
 
 @router.post("/notifications/{nid}/read")
 async def mark_read(nid: str, user=Depends(get_current_user)):
-    await db.notifications.update_one({"_id": ObjectId(nid)}, {"$set": {"read": True}})
+    try:
+        oid = ObjectId(nid)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid id")
+    owner = ({"$or": [{"user_id": user["id"]}, {"role_target": "staff"}]}
+             if user["role"] in ("admin", "manager") else {"user_id": user["id"]})
+    await db.notifications.update_one({"_id": oid, **owner}, {"$set": {"read": True}})
     return {"message": "ok"}
 
 

@@ -76,16 +76,18 @@ async def my_assignments(user=Depends(require_delivery)):
     return out
 
 
-async def _get_active_assignment(order_id, user):
+async def _get_active_assignment(order_id, user, expected=None):
     a = await db.delivery_assignments.find_one({"order_id": order_id, "delivery_partner_id": user["id"]})
     if not a:
         raise HTTPException(status_code=403, detail="This delivery is not assigned to you.")
+    if expected is not None and a.get("status") not in expected:
+        raise HTTPException(status_code=400, detail="Invalid delivery step for the current order state.")
     return a
 
 
 @router.post("/delivery/{order_id}/accept")
 async def accept_delivery(order_id: str, user=Depends(require_delivery)):
-    a = await _get_active_assignment(order_id, user)
+    a = await _get_active_assignment(order_id, user, expected=["assigned"])
     await db.delivery_assignments.update_one({"_id": a["_id"]},
                                              {"$set": {"status": "accepted", "accepted_at": now_iso()}})
     await _advance_order(order_id, "ACCEPTED", user)
@@ -96,7 +98,7 @@ async def accept_delivery(order_id: str, user=Depends(require_delivery)):
 
 @router.post("/delivery/{order_id}/reject")
 async def reject_delivery(order_id: str, user=Depends(require_delivery)):
-    a = await _get_active_assignment(order_id, user)
+    a = await _get_active_assignment(order_id, user, expected=["assigned"])
     await db.delivery_assignments.update_one({"_id": a["_id"]}, {"$set": {"status": "rejected"}})
     await db.orders.update_one({"_id": ObjectId(order_id)},
                                {"$set": {"delivery_partner_id": None, "internal_status": "READY_FOR_PICKUP",
@@ -108,7 +110,7 @@ async def reject_delivery(order_id: str, user=Depends(require_delivery)):
 
 @router.post("/delivery/{order_id}/pickup")
 async def pickup(order_id: str, user=Depends(require_delivery)):
-    a = await _get_active_assignment(order_id, user)
+    a = await _get_active_assignment(order_id, user, expected=["accepted"])
     await db.delivery_assignments.update_one({"_id": a["_id"]},
                                              {"$set": {"status": "picked_up", "pickup_at": now_iso()}})
     return {"message": "Picked up"}
@@ -116,7 +118,7 @@ async def pickup(order_id: str, user=Depends(require_delivery)):
 
 @router.post("/delivery/{order_id}/start")
 async def start_delivery(order_id: str, body: LocationUpdateReq, user=Depends(require_delivery)):
-    a = await _get_active_assignment(order_id, user)
+    a = await _get_active_assignment(order_id, user, expected=["picked_up"])
     await db.delivery_assignments.update_one({"_id": a["_id"]},
                                              {"$set": {"status": "out_for_delivery", "start_at": now_iso()}})
     await db.delivery_locations.update_one(
@@ -140,7 +142,7 @@ async def update_location(order_id: str, body: LocationUpdateReq, user=Depends(r
 
 @router.post("/delivery/{order_id}/delivered")
 async def mark_delivered(order_id: str, user=Depends(require_delivery)):
-    a = await _get_active_assignment(order_id, user)
+    a = await _get_active_assignment(order_id, user, expected=["out_for_delivery"])
     await db.delivery_assignments.update_one({"_id": a["_id"]},
                                              {"$set": {"status": "delivered", "delivered_at": now_iso()}})
     await db.orders.update_one({"_id": ObjectId(order_id)}, {"$set": {"payment_status": "paid"}})

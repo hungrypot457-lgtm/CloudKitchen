@@ -24,7 +24,7 @@ async def create_indexes():
     await db.delivery_assignments.create_index("delivery_partner_id")
     await db.delivery_assignments.create_index("order_id")
     await db.audit_logs.create_index("timestamp")
-    await db.password_reset_tokens.create_index("token")
+    await db.password_reset_tokens.create_index("token_hash")
 
 
 async def remove_demo_accounts():
