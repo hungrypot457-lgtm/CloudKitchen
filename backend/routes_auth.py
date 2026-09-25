@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import datetime, timezone, timedelta
+import httpx
 from db import db
 from models import RegisterReq, LoginReq, ProfileReq
 from auth import hash_password, verify_password, create_access_token, get_current_user
@@ -7,6 +8,8 @@ from utils import serialize, now_iso, audit
 from bson import ObjectId
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+EMERGENT_SESSION_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
 
 MAX_ATTEMPTS = 5
 LOCK_MINUTES = 15
@@ -76,6 +79,49 @@ async def login(body: LoginReq, request: Request):
 @router.get("/me")
 async def me(user: dict = Depends(get_current_user)):
     return {"user": user}
+
+
+@router.post("/google")
+async def google_auth(request: Request):
+    session_id = request.headers.get("X-Session-ID")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Missing Google session.")
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(EMERGENT_SESSION_URL, headers={"X-Session-ID": session_id})
+    except Exception:
+        raise HTTPException(status_code=502, detail="Google sign-in is unavailable. Please try again.")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=401, detail="Google sign-in failed. Please try again.")
+    data = resp.json()
+    email = (data.get("email") or "").lower()
+    if not email:
+        raise HTTPException(status_code=401, detail="Google sign-in failed. Please try again.")
+    user = await db.users.find_one({"email": email})
+    if not user:
+        doc = {
+            "name": data.get("name") or email.split("@")[0],
+            "email": email,
+            "phone": "",
+            "password_hash": "",
+            "role": "customer",
+            "status": "active",
+            "profile_photo": data.get("picture", ""),
+            "auth_provider": "google",
+            "created_at": now_iso(),
+        }
+        res = await db.users.insert_one(doc)
+        doc["id"] = str(res.inserted_id)
+        user = doc
+        uid = doc["id"]
+        role = "customer"
+    else:
+        uid = str(user["_id"])
+        role = user["role"]
+        if not user.get("profile_photo") and data.get("picture"):
+            await db.users.update_one({"_id": user["_id"]}, {"$set": {"profile_photo": data["picture"]}})
+    token = create_access_token(uid, role)
+    return {"token": token, "user": serialize(user)}
 
 
 @router.post("/logout")

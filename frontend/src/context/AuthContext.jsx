@@ -8,6 +8,25 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    const hash = window.location.hash || "";
+    if (hash.includes("session_id=")) {
+      const sid = new URLSearchParams(hash.replace(/^#/, "")).get("session_id");
+      if (sid) {
+        api
+          .post("/auth/google", {}, { headers: { "X-Session-ID": sid } })
+          .then((r) => {
+            localStorage.setItem("cb_token", r.data.token);
+            setUser(r.data.user);
+          })
+          .catch(() => {})
+          .finally(() => {
+            window.history.replaceState(null, "", window.location.pathname);
+            setLoading(false);
+          });
+        return;
+      }
+    }
     const t = localStorage.getItem("cb_token");
     if (!t) {
       setLoading(false);

@@ -29,6 +29,12 @@ export default function CustomerAuth() {
     } catch (err) { toast.error(errMsg(err)); } finally { setBusy(false); }
   };
 
+  const googleLogin = () => {
+    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    const redirectUrl = window.location.origin + "/app";
+    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+  };
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
       <div className="relative flex flex-col justify-end bg-secondary px-6 pb-8 pt-12 text-white" style={{ minHeight: 260 }}>
@@ -66,7 +72,7 @@ export default function CustomerAuth() {
         <div className="mt-5 space-y-2">
           <p className="text-center text-xs text-slate-400">or continue with</p>
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" type="button" data-testid="google-login" onClick={() => toast.info("Google login coming soon")}>Google</Button>
+            <Button variant="outline" type="button" data-testid="google-login" onClick={googleLogin}>Google</Button>
             <Button variant="outline" type="button" data-testid="facebook-login" onClick={() => toast.info("Facebook login coming soon")}>Facebook</Button>
           </div>
         </div>
