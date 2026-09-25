@@ -1,0 +1,36 @@
+{
+  "summary": "Security-remediation backend verification for CloudBite. Wrote a fresh pytest suite that creates its own admin/manager/customer/delivery-partner accounts (since demo seed users were removed) and validates all four SEC-* fixes plus JWT hardening and regression flows. 27/27 tests passed in ~11s.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SEC-001: /api/auth/forgot-password stores sha256(token_hash), never returns the raw token, and logs only the email — good. Reset endpoint hashes the incoming token and matches by token_hash; returns 400 for invalid/expired/used tokens. Verified.",
+    "SEC-002: utils.safe_regex uses re.escape and 100-char cap; wired into routes_menu.list_menu, routes_orders.list_orders (q), routes_admin.list_customers (q). Malicious patterns like (a+)+$, .*, a{99999} all return in <3s with 200. Verified.",
+    "SEC-003: routes_delivery._get_active_assignment(expected=[...]) enforces state machine — accept requires 'assigned', pickup requires 'accepted', start requires 'picked_up', delivered requires 'out_for_delivery'. Illegal steps 400 with 'Invalid delivery step...'. payment_status='paid' only set inside mark_delivered after out_for_delivery gate. Verified.",
+    "SEC-004: routes_misc.mark_read wraps ObjectId in try/except (400 on malformed) and applies owner-scoped filter (user_id=user.id OR role_target='staff' for staff). Cross-user mark-read is a genuine no-op — verified by comparing admin's notification 'read' state before/after the customer's attempt. Verified.",
+    "JWT hardening: auth.get_current_user now rejects tokens whose payload 'type' != 'access'. Confirmed by minting a valid HS256 token with type='refresh' using the server's JWT_SECRET and receiving 401.",
+    "Minor observation (not a blocker): reset-password with empty string token currently returns 400 (hash of empty string doesn't match any record) — Pydantic doesn't min-length validate. Fine, but consider adding min_length=1 to ResetPasswordReq.token for defense-in-depth.",
+    "Minor observation: /api/notifications/{nid}/read returns generic {\"message\":\"ok\"} even when the update matched 0 documents. Behaviour matches the security intent (no info leak) but you might want to log/audit unauthorized attempts."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (rewritten — creates own accounts, covers SEC-001..004, JWT hardening, regression)"
+  ],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "not tested (out of scope)"},
+  "test_credentials": "Admin hungrypot457@gmail.com/Admin@12345 (seeded). Manager/customer/delivery accounts are created dynamically per session inside the pytest fixtures (TEST_* prefix).",
+  "seed_data_creation": "Each test session creates: 1 customer (register), 1 manager (POST /api/admin/managers), 1 delivery partner (POST /api/admin/delivery-partners) plus several TEST_ orders across delivery-lifecycle scenarios. Not cleaned up so main agent can inspect audit logs / orders.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Suite is at /app/backend/tests/backend_test.py; no seed accounts required beyond the env-seeded admin. Uses REACT_APP_BACKEND_URL from /app/frontend/.env. Reads JWT_SECRET from /app/backend/.env for the non-access-type token test (skips if unreadable). All SEC-* fixes verified end-to-end; the only optional hardenings are (a) Pydantic min_length on reset token, (b) auditing unauthorized notification/read attempts.",
+  "rca of the issue": "N/A — all remediations verified working."
+}
