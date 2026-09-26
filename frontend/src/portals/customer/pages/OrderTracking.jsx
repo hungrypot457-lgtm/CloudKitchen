@@ -16,9 +16,12 @@ export default function OrderTracking() {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [settings, setSettings] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const timer = useRef(null);
 
-  const load = () => api.get(`/orders/${id}`).then((r) => setOrder(r.data)).catch(() => {});
+  const load = () => api.get(`/orders/${id}`).then((r) => setOrder(r.data)).catch((e) => {
+    if (e?.response?.status && e.response.status !== 401) { setNotFound(true); clearInterval(timer.current); }
+  });
   useEffect(() => {
     api.get("/settings").then((r) => setSettings(r.data)).catch(() => {});
     load();
@@ -27,6 +30,15 @@ export default function OrderTracking() {
     // eslint-disable-next-line
   }, [id]);
 
+  if (notFound) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-6 text-center" data-testid="tracking-not-found">
+        <p className="font-display text-lg font-bold text-slate-900">Order not found</p>
+        <p className="text-sm text-slate-500">This order doesn't exist or isn't linked to your account.</p>
+        <button onClick={() => navigate("/app/orders")} className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white" data-testid="tracking-not-found-back">Back to orders</button>
+      </div>
+    );
+  }
   if (!order || !settings) return <div className="mx-auto max-w-md"><Loader /></div>;
 
   const cancelled = order.customer_stage === "ORDER CANCELLED";
