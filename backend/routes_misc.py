@@ -142,6 +142,8 @@ async def reports(user=Depends(require_permission("view_reports"))):
 # ---------- AUDIT LOGS (admin only) ----------
 @router.get("/admin/audit-logs")
 async def audit_logs(skip: int = 0, limit: int = 50, user=Depends(require_admin)):
+    if skip < 0 or limit < 0:
+        raise HTTPException(status_code=400, detail="Pagination values must be non-negative")
     total = await db.audit_logs.count_documents({})
     logs = await db.audit_logs.find({}).sort("timestamp", -1).skip(skip).limit(min(limit, 100)).to_list(100)
     return {"total": total, "logs": [serialize(l) for l in logs]}

@@ -13,6 +13,7 @@ function App() {
         <Route path="/console/*" element={<StaffApp />} />
         <Route path="/app/*" element={<CustomerApp />} />
         <Route path="/rider/*" element={<DeliveryApp />} />
+        <Route path="*" element={<Navigate to="/app" replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -166,6 +166,8 @@ async def get_order(order_id: str, user=Depends(get_current_user)):
 async def list_orders(status: str | None = None, q: str | None = None,
                       skip: int = 0, limit: int = 50,
                       user=Depends(require_permission("view_orders"))):
+    if skip < 0 or limit < 0:
+        raise HTTPException(status_code=400, detail="Pagination values must be non-negative")
     query = {}
     if status:
         query["internal_status"] = status

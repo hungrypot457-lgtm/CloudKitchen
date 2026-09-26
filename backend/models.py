@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import List, Optional
 
 
@@ -8,6 +8,13 @@ class RegisterReq(BaseModel):
     email: EmailStr
     phone: str = Field(min_length=6, max_length=20)
     password: str = Field(min_length=6, max_length=128)
+
+    @field_validator("name")
+    @classmethod
+    def reject_markup(cls, value: str) -> str:
+        if "<" in value or ">" in value:
+            raise ValueError("name contains invalid characters")
+        return value.strip()
 
 
 class LoginReq(BaseModel):
