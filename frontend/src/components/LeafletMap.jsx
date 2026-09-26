@@ -57,9 +57,11 @@ export function LeafletMap({
   }, []);
 
   // recenter
+  const centerLat = center?.[0];
+  const centerLng = center?.[1];
   useEffect(() => {
-    if (mapRef.current && center) mapRef.current.setView(center, mapRef.current.getZoom());
-  }, [center?.[0], center?.[1]]);
+    if (mapRef.current && centerLat != null && centerLng != null) mapRef.current.setView([centerLat, centerLng], mapRef.current.getZoom());
+  }, [centerLat, centerLng]);
 
   // draw markers / circle / pin
   useEffect(() => {

@@ -26,7 +26,19 @@ if not BASE_URL:
                 BASE_URL = line.split("=", 1)[1].strip().rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN = ("hungrypot457@gmail.com", "Admin@12345")
+
+def _env_admin():
+    email, pw = os.environ.get("ADMIN_EMAIL"), os.environ.get("ADMIN_PASSWORD")
+    if not (email and pw) and os.path.exists("/app/backend/.env"):
+        with open("/app/backend/.env") as f:
+            kv = dict(line.strip().split("=", 1) for line in f if "=" in line and not line.startswith("#"))
+        email, pw = email or kv.get("ADMIN_EMAIL"), pw or kv.get("ADMIN_PASSWORD")
+    if not (email and pw):
+        pytest.exit("ADMIN_EMAIL / ADMIN_PASSWORD not configured; refusing to run with hardcoded credentials")
+    return (email, pw)
+
+
+ADMIN = _env_admin()
 
 KITCHEN = (19.0760, 72.8777)
 NEAR = (19.08, 72.88)

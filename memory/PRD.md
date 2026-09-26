@@ -31,10 +31,16 @@ Build a complete cloud kitchen food ordering & delivery management system with O
 - Delivery app: login, assigned deliveries, accept/reject/pickup/start/delivered, live location push, navigate link, history, profile.
 
 ## Demo Credentials
-- Admin: hungrypot457@gmail.com / Admin@12345
-- Manager: manager@cloudbite.com / Manager@123
-- Customer: customer@cloudbite.com / Customer@123
-- Rider: rider@cloudbite.com / Rider@123
+- Seeded admin only: from backend/.env ADMIN_EMAIL / ADMIN_PASSWORD (see /app/memory/test_credentials.md). No permanent demo/manager/customer/rider accounts exist (user rule).
+
+## QA Audit (2026-09-26)
+- Frontend env: /app/frontend/.env REACT_APP_BACKEND_URL set from platform runtime `preview_endpoint` (not committed; CRA build-time var).
+- Backend QA: 130 tests (iteration_1/2) + 27 pytest regression PASS. Frontend authenticated browser QA (iteration_3/4) PASS across admin/manager/customer/rider incl. full e2e order→assign→deliver, 5 km rule, ₹0 fees, RBAC, responsive.
+- Bugs fixed this audit: negative pagination 500; registration markup; unknown-route blank page; manager could open admin-only console pages by URL (client route Guard in StaffApp.jsx); /app/orders/:id infinite Loading on invalid id (not-found state); LeafletMap exhaustive-deps lint → CI build failure; pytest suite hardcoded non-existent admin (now env-driven).
+- Known leftovers (pre-existing test artifacts, not touched): menu item "Test Item", business_name "CloudBite Kitchen Updated", 11 orphan order_status_history + 12 audit_logs rows from earlier sessions.
+
+## Pending — Security & Configuration Hardening (user request, NOT started)
+- seed.py: remove default fallback admin credentials (fail safely). CORS: remove wildcard. Delivery assignment: validate partner active (server-side; UI already filters). Audit log on delivery rejection. JWT in localStorage review. Password reset token delivery (email/SMS).
 
 ## Backlog / Future (P1/P2)
 - P1: Real Google/Facebook OAuth; push/email notifications; menu customization editor UI in admin.
