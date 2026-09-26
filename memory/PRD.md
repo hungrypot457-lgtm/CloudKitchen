@@ -39,6 +39,11 @@ Build a complete cloud kitchen food ordering & delivery management system with O
 - Bugs fixed this audit: negative pagination 500; registration markup; unknown-route blank page; manager could open admin-only console pages by URL (client route Guard in StaffApp.jsx); /app/orders/:id infinite Loading on invalid id (not-found state); LeafletMap exhaustive-deps lint → CI build failure; pytest suite hardcoded non-existent admin (now env-driven).
 - Known leftovers (pre-existing test artifacts, not touched): menu item "Test Item", business_name "CloudBite Kitchen Updated", 11 orphan order_status_history + 12 audit_logs rows from earlier sessions.
 
+## Real-Device Readiness Check (2026-09-26) — PASS, no code changes
+- Mobile-emulated (iPhone 13 / Pixel 5, touch) browser run: /app/test_reports/iteration_5.json. Customer checkout GPS denied/granted paths, touch pin drop + marker drag, OSM tiles + Leaflet CDN CSS load, COD/₹0, order→rider accept/pickup/start(GPS-denied kitchen fallback)/live location POST ~8s/delivered, customer 3-stage tracking, admin/manager at 1920/1366/1024/768/390 — all PASS. Google login = full-page redirect (no popup).
+- BLOCKED (physical phone only): real GPS fix/accuracy, native permission prompt persistence, background-tab throttling of rider location loop, Google consent completion, iOS Safari gesture/momentum-scroll, Android WebView drag.
+- Note: pytest suite creates TEST_* accounts/orders and admin reset tokens and does not self-clean — remove after each run.
+
 ## Pending — Security & Configuration Hardening (user request, NOT started)
 - seed.py: remove default fallback admin credentials (fail safely). CORS: remove wildcard. Delivery assignment: validate partner active (server-side; UI already filters). Audit log on delivery rejection. JWT in localStorage review. Password reset token delivery (email/SMS).
 
